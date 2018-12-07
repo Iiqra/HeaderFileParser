@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CToPython", "CToPython.csproj", "{2108B455-0BE3-43CF-8BB6-80B309A37641}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2108B455-0BE3-43CF-8BB6-80B309A37641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2108B455-0BE3-43CF-8BB6-80B309A37641}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2108B455-0BE3-43CF-8BB6-80B309A37641}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2108B455-0BE3-43CF-8BB6-80B309A37641}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {99CF8196-15AB-46FE-895A-0A6933E21A9F}
+	EndGlobalSection
+EndGlobal
