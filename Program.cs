@@ -30,16 +30,29 @@ namespace CToPython
                 var content = File.ReadAllLines(headerFile);
                 if (content.Length > 0) {
                     Header header = new Header();
+                    Comment comment = null;
                     for (int i = 0; i < content.Length; i++) {
-                        var line = content[i];
+                        var line = content[i].Trim();
+                        if (line.StartsWith("//"))
+                        {
+                            if(comment == null)
+                            {
+                                comment = new Comment();
+                            }
+
+                            comment.Content += line.Replace("//", "").Trim();
+                        }
                         if (line.StartsWith("const"))
                         {
                             var cons = line.Split(" ");
                             header.Consts.Add(new Const
                             {
                                 Name = cons[2],
-                                Value = cons[4].Substring(0, cons[4].IndexOf(";"))
+                                Value = cons[4].Substring(0, cons[4].IndexOf(";")), 
+                                Comment = comment
                             });
+
+                            comment = null;
                         }
                         else if (line.StartsWith("#define"))
                         {
@@ -48,8 +61,11 @@ namespace CToPython
                             header.Defines.Add(new Define
                             {
                                 Name = define[1],
-                                Value = define[2]
+                                Value = define[2],
+                                Comment = comment
                             });
+
+                            comment = null;
                         }
                         else if (line.StartsWith("typedef struct"))
                         {
@@ -89,8 +105,11 @@ namespace CToPython
                             header.Structures.Add(new Structure
                             {
                                 Name = names[0].Trim(),
-                                Fields = fields
+                                Fields = fields,
+                                Comment = comment
                             });
+
+                            comment = null;
                         }
                         else if (line.StartsWith("typedef"))
                         {
@@ -99,8 +118,11 @@ namespace CToPython
                             header.TypeDefines.Add(new TypeDefine
                             {
                                 Type = typedef[1],
-                                Alias = typedef[2].Replace(";", "")
+                                Alias = typedef[2].Replace(";", ""),
+                                Comment = comment
                             });
+
+                            comment = null;
                         }
                         else if (line.StartsWith("VOID WINAPI")) {
                             // VOID WINAPI name(paramname name);
@@ -119,6 +141,9 @@ namespace CToPython
                             {
                                 _cb.Param = callback[1].Split(" ")[0].Replace("Ptr", "").Trim();
                             }
+                            
+                            _cb.Comment = comment;
+                            comment = null;
 
                             header.Callbacks.Add(_cb);
                         }
@@ -146,6 +171,11 @@ namespace CToPython
                 appendSectionSeparator(builder, "Consts");
                 foreach (var cons in header.Consts)
                 {
+                    if(cons.Comment != null)
+                    {
+                        builder.AppendLine();
+                        builder.AppendLine($"# {cons.Comment.Content}");
+                    }
                     builder.AppendLine($"{cons.Name} = {cons.Value}");
                 }
             }
@@ -155,6 +185,11 @@ namespace CToPython
                 appendSectionSeparator(builder, "Defines");
                 foreach (var define in header.Defines)
                 {
+                    if (define.Comment != null)
+                    {
+                        builder.AppendLine();
+                        builder.AppendLine($"# {define.Comment.Content}");
+                    }
                     builder.AppendLine($"{define.Name} = {define.Value}");
                 }
             }
@@ -164,6 +199,11 @@ namespace CToPython
                 appendSectionSeparator(builder, "Typedefs");
                 foreach (var typedef in header.TypeDefines)
                 {
+                    if (typedef.Comment != null)
+                    {
+                        builder.AppendLine();
+                        builder.AppendLine($"# {typedef.Comment.Content}");
+                    }
                     builder.AppendLine($"{typedef.Alias} = {typedef.Type}");
                 }
             }
@@ -173,6 +213,11 @@ namespace CToPython
                 appendSectionSeparator(builder, "Structures");
                 foreach (var structure in header.Structures)
                 {
+                    if (structure.Comment != null)
+                    {
+                        builder.AppendLine();
+                        builder.AppendLine($"# {structure.Comment.Content}");
+                    }
                     builder.AppendLine($"class {structure.Name}(Structure):");
                     builder.Append("    _fields_ = [");
                     for (int i = 0; i < structure.Fields.Count; i++)
@@ -195,6 +240,11 @@ namespace CToPython
                 appendSectionSeparator(builder, "Callbacks");
                 foreach (var callback in header.Callbacks)
                 {
+                    if (callback.Comment != null)
+                    {
+                        builder.AppendLine();
+                        builder.AppendLine($"# {callback.Comment.Content}");
+                    }
                     builder.AppendLine($"{callback.Name} = CFUNCTYPE(None, POINTER({callback.Param}))");
                 }
             }
