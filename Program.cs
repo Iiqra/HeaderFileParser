@@ -45,7 +45,7 @@ namespace CToPython
                         if (line.StartsWith("const"))
                         {
                             var cons = line.Split(" ");
-                            header.Consts.Add(new Const
+                            header.Expressions.Enqueue(new Const
                             {
                                 Name = cons[2],
                                 Value = cons[4].Substring(0, cons[4].IndexOf(";")), 
@@ -58,7 +58,7 @@ namespace CToPython
                         {
                             // #define name value
                             var define = line.Split(" ");
-                            header.Defines.Add(new Define
+                            header.Expressions.Enqueue(new Define
                             {
                                 Name = define[1],
                                 Value = define[2],
@@ -102,7 +102,7 @@ namespace CToPython
                             } while (!(line.Contains("}") && line.Contains(";")));
                             line = line.Replace("}", "").Replace(";", "");
                             var names = line.Split(",");
-                            header.Structures.Add(new Structure
+                            header.Expressions.Enqueue(new Structure
                             {
                                 Name = names[0].Trim(),
                                 Fields = fields,
@@ -111,11 +111,17 @@ namespace CToPython
 
                             comment = null;
                         }
+                        else if (line.StartsWith("typedef VOID") 
+                                || line.StartsWith("typedef INT") 
+                                || line.StartsWith("typedef LPCSTR"))
+                        {
+                            // Ignore
+                        }
                         else if (line.StartsWith("typedef"))
                         {
                             // #typedef type alias
                             var typedef = line.Split(" ");
-                            header.TypeDefines.Add(new TypeDefine
+                            header.Expressions.Enqueue(new TypeDefine
                             {
                                 Type = typedef[1],
                                 Alias = typedef[2].Replace(";", ""),
@@ -133,24 +139,26 @@ namespace CToPython
                             // _cb.Name = callback[2].Substring(0, callback[2].IndexOf('('));
                             _cb.Name = callback[0];
 
+                            var param = new Parameter();
                             if (callback[1] == ");")
                             {
-                                _cb.Param = "None";
+                                param.Name = "None";
                             }
                             else
                             {
-                                _cb.Param = callback[1].Split(" ")[0].Replace("Ptr", "").Trim();
+                                param.Name = callback[1].Split(" ")[0].Replace("Ptr", "").Trim();
                             }
-                            
+
+                            _cb.Param = new List<Parameter> { param };
                             _cb.Comment = comment;
                             comment = null;
 
-                            header.Callbacks.Add(_cb);
+                            header.Expressions.Enqueue(_cb);
                         }
                 }
-                
-                writePython(header, pythonFile);
-                Console.WriteLine("Processed header and written in Python file.");
+
+                    writePython(header, pythonFile);
+                    Console.WriteLine("Processed header and written in Python file.");
             } else {
                 Console.WriteLine("Header file is empty.");
             }
@@ -159,60 +167,54 @@ namespace CToPython
             }
         }
 
+        
         private static void writePython(Header header, string pythonFile) {
             if(header == null || string.IsNullOrEmpty(pythonFile)) {
                 return;
             }
 
             StringBuilder builder = new StringBuilder();
-
-            if (header.Consts.Count != 0)
+            while (header.Expressions.Count > 0)
             {
-                appendSectionSeparator(builder, "Consts");
-                foreach (var cons in header.Consts)
+                var expression = header.Expressions.Dequeue();
+                if(expression is Const)
                 {
-                    if(cons.Comment != null)
+                    //appendSectionSeparator(builder, "Consts");
+                    var cons = expression as Const;
+
+                    if (cons.Comment != null)
                     {
                         builder.AppendLine();
                         builder.AppendLine($"# {cons.Comment.Content}");
                     }
                     builder.AppendLine($"{cons.Name} = {cons.Value}");
-                }
-            }
-            
-            if (header.Defines.Count != 0)
-            {
-                appendSectionSeparator(builder, "Defines");
-                foreach (var define in header.Defines)
+                } else if (expression is Define)
                 {
+                    //appendSectionSeparator(builder, "Defines");
+                    var define = expression as Define;
+
                     if (define.Comment != null)
                     {
                         builder.AppendLine();
                         builder.AppendLine($"# {define.Comment.Content}");
                     }
                     builder.AppendLine($"{define.Name} = {define.Value}");
-                }
-            }
-      
-            if (header.TypeDefines.Count !=0)
-            {
-                appendSectionSeparator(builder, "Typedefs");
-                foreach (var typedef in header.TypeDefines)
+                } else if (expression is TypeDefine)
                 {
+                    //appendSectionSeparator(builder, "Typedefs");
+                    var typedef = expression as TypeDefine;
+
                     if (typedef.Comment != null)
                     {
                         builder.AppendLine();
                         builder.AppendLine($"# {typedef.Comment.Content}");
                     }
                     builder.AppendLine($"{typedef.Alias} = {typedef.Type}");
-                }
-            }
-            
-            if (header.Structures.Count != 0)
-            {
-                appendSectionSeparator(builder, "Structures");
-                foreach (var structure in header.Structures)
+                } else if (expression is Structure)
                 {
+                    //appendSectionSeparator(builder, "Structures");
+                    var structure = expression as Structure;
+
                     if (structure.Comment != null)
                     {
                         builder.AppendLine();
@@ -233,25 +235,23 @@ namespace CToPython
                         }
                     }
                     builder.AppendLine("]");
-                }
-            }
-            if (header.Callbacks.Count != 0)
-            {
-                appendSectionSeparator(builder, "Callbacks");
-                foreach (var callback in header.Callbacks)
+                    
+                } else if (expression is Callback)
                 {
-                    if (callback.Comment != null)
+                    //appendSectionSeparator(builder, "Callbacks");
+                    var callback = expression as Callback; 
+                    if (expression.Comment != null)
                     {
                         builder.AppendLine();
-                        builder.AppendLine($"# {callback.Comment.Content}");
+                        builder.AppendLine($"# {expression.Comment.Content}");
                     }
-                    builder.AppendLine($"{callback.Name} = CFUNCTYPE(None, POINTER({callback.Param}))");
+                    builder.AppendLine($"{callback.Name} = CFUNCTYPE(None, POINTER({callback.Param[0].Name}))");
                 }
             }
 
             File.WriteAllText(pythonFile, builder.ToString());
         }
-
+        
         #region Helper Method
 
         private static void dicDatatypes()

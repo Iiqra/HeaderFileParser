@@ -1,62 +1,63 @@
 using System.Collections.Generic;
 
 namespace DataStructures {
+    public class Expression
+    {
+        public Comment Comment { get; set; }
+    }
+
     public class Comment
     {
         public string Content { get; set; }
     }
 
-    public class Const
+    public class Const : Expression
     {
         public string Name { get; set; }
         public string Value { get; set; }
-        public Comment Comment { get; set; }
     }
 
-    public class Define {
+    public class Define : Expression
+    {
         public string Name { get; set; }
         public string Value { get; set; }
-        public Comment Comment { get; set; }
     }
 
-    public class TypeDefine {
+    public class TypeDefine : Expression
+    {
         public string Type { get; set; }
         public string Alias { get; set; }
-        public Comment Comment { get; set; }
     }
 
-    public class Structure {
-        public string Name { get; set; }
-        public List<Field> Fields { get; set; }
-        public Comment Comment { get; set; }
-    }
-
-    public class Field {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public Comment Comment { get; set; }
-    }
-
-    public class Callback
+    public class Structure : Expression
     {
         public string Name { get; set; }
-        public string Param { get; set; }
-        public Comment Comment { get; set; }
+        public List<Field> Fields { get; set; }
+    }
+
+    public class Field 
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+    }
+
+    public class Callback : Expression
+    {
+        public string Name { get; set; }
+        public List<Parameter> Param { get; set; }
+    }
+
+    public class Parameter
+    {
+        public string Type { get; set; }
+        public string Name { get; set; }
     }
 
     public class Header {
-        public List<Const> Consts { get; set; }
-        public List<Define> Defines { get; set; }
-        public List<TypeDefine> TypeDefines { get; set; }
-        public List<Structure> Structures { get; set; }
-        public List<Callback> Callbacks { get; set; }
+        public Queue<Expression> Expressions { get; set; }
 
         public Header() {
-            Consts = new List<Const>();
-            Defines = new List<Define>();
-            TypeDefines = new List<TypeDefine>();
-            Structures = new List<Structure>();
-            Callbacks = new List<Callback>();
+            Expressions = new Queue<Expression>();
         }
     }
 }
