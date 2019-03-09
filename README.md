@@ -120,7 +120,7 @@ typedef struct {
 	CHAR sampletradingCapacity;
 	Array20 samplewaiverFlag;
 	CHAR sampleancillaryTrading;
-	Array20 samplerequestInTimeStamp;		//YYYYMMDD:hh.mm.ss.ssssss
+	Array20 samplerequestInTimeStamp;		
 	Array20 samplerequestOutTimeStamp;
 	Array20 sampleresponseInTimeStamp;
 	Array20 sampleresponseOutTimeStamp;
@@ -225,7 +225,7 @@ class SampleOrderDetailStruct(Structure):
 			 ("sampletradingCapacity", c_char),
 			 ("samplewaiverFlag", c_char*21),
 			 ("sampleancillaryTrading", c_char),
-			 ("samplerequestInTimeStamp		//YYYYMMDD:hh.mm.ss.ssssss", c_char*21),
+			 ("samplerequestInTimeStamp", c_char*21),
 			 ("samplerequestOutTimeStamp", c_char*21),
 			 ("sampleresponseInTimeStamp", c_char*21),
 			 ("sampleresponseOutTimeStamp", c_char*21),
