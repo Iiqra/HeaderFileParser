@@ -3,8 +3,8 @@ This repository contains the code for .NET Core parser for C/C++ header file, ca
 
 Demo ↴↴↴↴
 
-############################## CPP header file (File to be converted)#####################################
-
+------------ CPP header file (File to be converted) ------------
+```
 /* sample.h  v2.8.3 */
 #ifndef _WINDOWS_
 #include <windows.h>
@@ -133,8 +133,9 @@ VOID WINAPI SampleHostStateChange(LinkStateStructPtr data);
 
 #pragma pack (pop,SAMPLEAPI)
 
-
-############################## PYTHON CTypes (Converted file)#####################################
+```
+--------- PYTHON CTypes (Converted file)------------
+```
 SAMPLE_CORE_SP = 6
 ptGateway = 'G'
 ptIDsNull = -1
@@ -232,7 +233,7 @@ class SampleOrderDetailStruct(Structure):
 
 # Callback declarations
 SampleHostStateChange = CFUNCTYPE(None, POINTER(LinkStateStruct))
-
+```
 
 
 
